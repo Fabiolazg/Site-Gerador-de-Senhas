@@ -3,55 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerar Senhas de Atendimento</title>
+
+  <title>Gerador de Senhas</title>
+  <link rel="icon" type="image/png" href="logo.png">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 30px;
-      background-color: #f8f8f8;
-    }
-
-    h1 {
-      color: #333;
-    }
-
-    input, button {
-      margin: 10px;
-      padding: 8px;
-      font-size: 16px;
-    }
-
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
-    .footer {
-      margin-top: 20px;
-      font-size: 14px;
-      color: #666;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Gerador de Senhas de Atendimento</h1>
-  <p>Selecione a data para gerar as senhas:</p>
-  <input type="date" id="data" />
-  <button onclick="gerarPDF()">Gerar PDF</button>
-
-  <div class="footer">Cada turno gera 10 senhas, manhã e tarde em páginas separadas.</div>
+  <div class="container">
+    <h1>Gerador de Senhas de Atendimento</h1>
+    <p>Selecione a data para gerar as senhas:</p>
+    <input type="date" id="data" />
+    <button onclick="gerarPDF()">Gerar PDF</button>
+    <div class="footer">
+      Cada turno gera 10 senhas, manhã e tarde em páginas separadas.
+    </div>
+  </div>
 
   <script>
-        // 🔹 Ao pressionar Enter no campo de data, gera automaticamente o PDF
     document.getElementById("data").addEventListener("keypress", function(event) {
       if (event.key === "Enter") {
         event.preventDefault();
@@ -69,18 +38,16 @@
         return;
       }
 
-      // Corrige o fuso (evita o bug de um dia antes)
       const data = new Date(`${dataSelecionada}T00:00:00`);
       const opcoes = { year: 'numeric', month: '2-digit', day: '2-digit' };
       const dataFormatada = data.toLocaleDateString('pt-BR', opcoes);
 
       function gerarSenhas(turno, horarios) {
-        // 🔧 Margens seguras ajustadas
-        const startX = 20;   // antes 15 — aumentada margem esquerda
+        const startX = 20;
         const startY = 20;
-        const largura = 85;  // reduzida para equilibrar visual
+        const largura = 85;
         const altura = 38;
-        const margem = 12;   // espaçamento entre colunas
+        const margem = 12;
         const colunas = 2;
         const linhas = 5;
 
@@ -92,12 +59,10 @@
 
             doc.rect(x, y, largura, altura);
 
-            // Número da senha
             doc.setFontSize(22);
             doc.setFont("helvetica", "bold");
             doc.text(`Senha ${senha}`, x + largura / 2, y + 16, { align: "center" });
 
-            // Dia da semana e data
             const diasSemana = [
               "Domingo", "Segunda-feira", "Terça-feira",
               "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"
@@ -109,7 +74,6 @@
             doc.setFont("helvetica", "normal");
             doc.text(linhaData, x + largura / 2, y + 27, { align: "center" });
 
-            // Horário
             doc.setFontSize(13);
             doc.text(`Horário: ${horarios[senha - 1]}`, x + largura / 2, y + 35, { align: "center" });
 
@@ -129,17 +93,14 @@
         "14:10", "14:30", "14:50", "15:10", "15:30"
       ];
 
-      // Página 1 - Manhã
       doc.setFontSize(16);
       doc.text("Turno da Manhã", 105, 10, { align: "center" });
       gerarSenhas("Manhã", horariosManha);
 
-      // Página 2 - Tarde
       doc.addPage();
       doc.text("Turno da Tarde", 105, 10, { align: "center" });
       gerarSenhas("Tarde", horariosTarde);
 
-      // Salvar o PDF
       doc.save(`senhas_${dataSelecionada}.pdf`);
     }
   </script>
