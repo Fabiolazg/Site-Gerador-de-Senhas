@@ -51,6 +51,14 @@
   <div class="footer">Cada turno gera 10 senhas, manhã e tarde em páginas separadas.</div>
 
   <script>
+        // 🔹 Ao pressionar Enter no campo de data, gera automaticamente o PDF
+    document.getElementById("data").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        gerarPDF();
+      }
+    });
+
     async function gerarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -61,16 +69,18 @@
         return;
       }
 
+      // Corrige o fuso (evita o bug de um dia antes)
+      const data = new Date(`${dataSelecionada}T00:00:00`);
       const opcoes = { year: 'numeric', month: '2-digit', day: '2-digit' };
-      const dataFormatada = new Date(dataSelecionada).toLocaleDateString('pt-BR', opcoes);
+      const dataFormatada = data.toLocaleDateString('pt-BR', opcoes);
 
-      // Função para gerar as fichas
-      function gerarSenhas(turno, horarios, pagina = 1) {
-        const startX = 15;
+      function gerarSenhas(turno, horarios) {
+        // 🔧 Margens seguras ajustadas
+        const startX = 20;   // antes 15 — aumentada margem esquerda
         const startY = 20;
-        const largura = 85;
-        const altura = 35;
-        const margem = 10;
+        const largura = 85;  // reduzida para equilibrar visual
+        const altura = 38;
+        const margem = 12;   // espaçamento entre colunas
         const colunas = 2;
         const linhas = 5;
 
@@ -80,21 +90,28 @@
             const x = startX + coluna * (largura + margem);
             const y = startY + linha * (altura + margem);
 
-            // Borda
             doc.rect(x, y, largura, altura);
 
-            // Texto da senha (grande)
-            doc.setFontSize(28);
+            // Número da senha
+            doc.setFontSize(22);
             doc.setFont("helvetica", "bold");
-            doc.text(`Senha ${senha}`, x + largura / 2, y + 18, { align: "center" });
+            doc.text(`Senha ${senha}`, x + largura / 2, y + 16, { align: "center" });
 
-            // Data
-            doc.setFontSize(16);
+            // Dia da semana e data
+            const diasSemana = [
+              "Domingo", "Segunda-feira", "Terça-feira",
+              "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"
+            ];
+            const diaSemana = diasSemana[data.getDay()];
+            const linhaData = `${diaSemana} — ${dataFormatada}`;
+
+            doc.setFontSize(13);
             doc.setFont("helvetica", "normal");
-            doc.text(`Data: ${dataFormatada}`, x + largura / 2, y + 27, { align: "center" });
+            doc.text(linhaData, x + largura / 2, y + 27, { align: "center" });
 
             // Horário
-            doc.text(`Horário: ${horarios[senha - 1]}`, x + largura / 2, y + 33, { align: "center" });
+            doc.setFontSize(13);
+            doc.text(`Horário: ${horarios[senha - 1]}`, x + largura / 2, y + 35, { align: "center" });
 
             senha++;
             if (senha > horarios.length) return;
@@ -102,7 +119,6 @@
         }
       }
 
-      // Horários da manhã e tarde
       const horariosManha = [
         "07:30", "07:50", "08:10", "08:30", "08:50",
         "09:10", "09:30", "09:50", "10:10", "10:30"
