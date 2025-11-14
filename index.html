@@ -27,21 +27,21 @@
         gerarPDF();
       }
     });
-
+    // Função para gerar o PDF com as senhas
     async function gerarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-
+      // Obter a data selecionada
       const dataSelecionada = document.getElementById("data").value;
       if (!dataSelecionada) {
         alert("Por favor, selecione uma data.");
         return;
       }
-
+      // Formatar a data selecionada
       const data = new Date(`${dataSelecionada}T00:00:00`);
       const opcoes = { year: 'numeric', month: '2-digit', day: '2-digit' };
       const dataFormatada = data.toLocaleDateString('pt-BR', opcoes);
-
+      // Função para gerar senhas
       function gerarSenhas(turno, horarios) {
         const startX = 20;
         const startY = 20;
@@ -50,7 +50,7 @@
         const margem = 12;
         const colunas = 2;
         const linhas = 5;
-
+        // Gerar 10 senhas por turno
         let senha = 1;
         for (let linha = 0; linha < linhas; linha++) {
           for (let coluna = 0; coluna < colunas; coluna++) {
@@ -58,18 +58,18 @@
             const y = startY + linha * (altura + margem);
 
             doc.rect(x, y, largura, altura);
-
+            // Adicionar conteúdo da senha
             doc.setFontSize(22);
             doc.setFont("helvetica", "bold");
             doc.text(`Senha ${senha}`, x + largura / 2, y + 16, { align: "center" });
-
+            // Adicionar data formatada e dia da semana
             const diasSemana = [
               "Domingo", "Segunda-feira", "Terça-feira",
               "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"
             ];
             const diaSemana = diasSemana[data.getDay()];
             const linhaData = `${diaSemana} — ${dataFormatada}`;
-
+      
             doc.setFontSize(13);
             doc.setFont("helvetica", "normal");
             doc.text(linhaData, x + largura / 2, y + 27, { align: "center" });
@@ -82,7 +82,7 @@
           }
         }
       }
-
+      // Definir horários para manhã e tarde
       const horariosManha = [
         "07:30", "07:50", "08:10", "08:30", "08:50",
         "09:10", "09:30", "09:50", "10:10", "10:30"
@@ -92,11 +92,11 @@
         "12:30", "12:50", "13:10", "13:30", "13:50",
         "14:10", "14:30", "14:50", "15:10", "15:30"
       ];
-
+      // Gerar senhas para o turno da manhã
       doc.setFontSize(16);
       doc.text("Turno da Manhã", 105, 10, { align: "center" });
       gerarSenhas("Manhã", horariosManha);
-
+      // Adicionar nova página para o turno da tarde
       doc.addPage();
       doc.text("Turno da Tarde", 105, 10, { align: "center" });
       gerarSenhas("Tarde", horariosTarde);
